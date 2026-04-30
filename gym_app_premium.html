@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #121212;
+    --surface:   #1e1e1e;
+    --card:      #2a2a2a;
+    --card-top:  #2e2b24;
+    --gold:      #D4AF37;
+    --beige:     #E5D3A1;
+    --text:      #F5F5F5;
+    --muted:     #A1A1A1;
+    --dim:       #555;
+    --border:    rgba(255,255,255,0.06);
+    --gold-glow: rgba(212,175,55,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    padding-bottom: 60px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  .header {
+    padding: 48px 28px 28px;
+    position: sticky;
+    top: 0;
+    background: linear-gradient(180deg, #121212 70%, transparent 100%);
+    z-index: 100;
+  }
+
+  .wordmark {
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .wordmark span {
+    color: var(--gold);
+  }
+
+  /* Session selector */
+  .tabs {
+    display: flex;
+    gap: 6px;
+  }
+
+  .tab {
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 8px 4px;
+    cursor: pointer;
+    transition: color 0.25s, border-color 0.25s;
+    text-align: center;
+  }
+
+  .tab:hover { color: var(--muted); }
+
+  .tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* ── Content ── */
+  .content {
+    padding: 8px 20px 0;
+  }
+
+  /* Session header */
+  .session-header {
+    padding: 20px 8px 24px;
+    opacity: 0;
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  .session-label {
+    font-size: 0.6rem;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .session-title {
+    font-size: 1.6rem;
+    font-weight: 200;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .session-focus {
+    font-size: 0.72rem;
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  /* RIR note */
+  .rir-bar {
+    display: flex;
+    gap: 16px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border-radius: 8px;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.4s 0.08s ease forwards;
+  }
+
+  .rir-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .rir-key {
+    font-size: 0.55rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .rir-val {
+    font-size: 0.72rem;
+    font-weight: 300;
+    color: var(--muted);
+  }
+
+  /* Section */
+  .section-label {
+    font-size: 0.55rem;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dim);
+    padding: 0 8px;
+    margin: 24px 0 10px;
+  }
+
+  /* Exercise card */
+  .ex-card {
+    background: var(--card);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    opacity: 0;
+    animation: fadeUp 0.35s ease forwards;
+    transition: box-shadow 0.2s;
+  }
+
+  .ex-card.is-top {
+    background: var(--card-top);
+    box-shadow: 0 2px 20px rgba(212,175,55,0.08), 0 0 0 1px rgba(212,175,55,0.15);
+  }
+
+  .ex-card:active { box-shadow: 0 1px 6px rgba(0,0,0,0.3); }
+
+  .ex-row {
+    display: flex;
+    align-items: center;
+    padding: 16px 18px;
+    cursor: pointer;
+    gap: 14px;
+    user-select: none;
+  }
+
+  .ex-index {
+    font-size: 0.6rem;
+    font-weight: 300;
+    color: var(--dim);
+    width: 14px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .ex-body { flex: 1; min-width: 0; }
+
+  .ex-name {
+    font-size: 0.88rem;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .is-top .ex-name { color: var(--beige); }
+
+  .ex-stats {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .stat-key {
+    font-size: 0.5rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .stat-val {
+    font-size: 0.72rem;
+    font-weight: 300;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .is-top .stat-val { color: var(--beige); }
+
+  .stat-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .ex-arrow {
+    color: var(--dim);
+    font-size: 0.6rem;
+    flex-shrink: 0;
+    transition: transform 0.25s ease, color 0.2s;
+  }
+
+  .ex-arrow.open {
+    transform: rotate(180deg);
+    color: var(--gold);
+  }
+
+  /* Drawer */
+  .ex-drawer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .ex-drawer.open { max-height: 300px; }
+
+  .drawer-inner {
+    padding: 0 18px 18px 46px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .tip-text {
+    font-size: 0.73rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .alts-label {
+    font-size: 0.52rem;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+
+  .alts-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .alt-item {
+    font-size: 0.73rem;
+    font-weight: 300;
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .alt-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+
+  /* Empty state */
+  .empty {
+    padding: 80px 28px;
+    text-align: center;
+  }
+
+  .empty-line {
+    font-size: 0.6rem;
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 10px;
+  }
+
+  .empty-sub {
+    font-size: 0.65rem;
+    font-weight: 300;
+    color: var(--dim);
+    opacity: 0.5;
+    letter-spacing: 0.1em;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="wordmark">Training <span>/</span> Session Guide</div>
+  <div class="tabs">
+    <button class="tab" data-key="ua" onclick="select('ua')">Upper A</button>
+    <button class="tab" data-key="la" onclick="select('la')">Lower A</button>
+    <button class="tab" data-key="ub" onclick="select('ub')">Upper B</button>
+    <button class="tab" data-key="lb" onclick="select('lb')">Lower B</button>
+    <button class="tab" data-key="uc" onclick="select('uc')">Upper C</button>
+  </div>
+</div>
+
+<div class="content" id="content">
+  <div class="empty">
+    <div class="empty-line">Einheit wählen</div>
+    <div class="empty-sub">↑ Session auswählen</div>
+  </div>
+</div>
+
+<script>
+const data = {
+  ua: {
+    label: 'Upper A',
+    title: 'Brust & Rücken',
+    focus: 'Chest Press als Hauptlift · Rücken als Antagonist',
+    sections: [
+      { label: 'Hauptlift', items: [
+        { name: 'Chest Press (Machine)', top: true,
+          sets: '1 Top + 2 Backoff', reps: '4–6 / 8–10', rest: '3 min / 2 min',
+          tip: 'Handgelenk neutral. Backoff ≈ 87 % des Top-Gewichts. Bei Schmerz sofort reduzieren.',
+          alts: ['Incline Bench Press (Barbell)', 'Incline Bench Press (Dumbbell)'] }
+      ]},
+      { label: 'Brust', items: [
+        { name: 'Pec Fly — Watson Multi Pec',
+          sets: '3 Sätze', reps: '10–15', rest: '90 s',
+          tip: 'Maximaler Stretch in der Endposition. Exzentrisch kontrolliert senken.',
+          alts: ['Cable Fly Crossovers', 'Pec Deck / Butterfly'] }
+      ]},
+      { label: 'Rücken', items: [
+        { name: 'Seated Cable Row (V-Grip)',
+          sets: '3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Schulterblätter zusammenführen, kein Schwung aus dem Rücken.',
+          alts: ['Iso-Lateral Row (Machine)', 'T-Bar Row', 'Bent Over Row (Dumbbell)'] }
+      ]},
+      { label: 'Schulter', items: [
+        { name: 'Lateral Raise (Cable)',
+          sets: '3 Sätze', reps: '15–20', rest: '60 s',
+          tip: 'Ellenbogen leicht gebeugt. Bewegung aus der Schulter, nicht dem Handgelenk.',
+          alts: ['Lateral Raise (Machine)', 'Single Arm Lateral Raise (Cable)'] },
+        { name: 'Face Pull',
+          sets: '2 Sätze', reps: '15–20', rest: '60 s',
+          tip: 'Seil zu den Ohren. Ellenbogen hoch halten. Schultergesundheit.',
+          alts: ['Rear Delt Reverse Fly (Machine)', 'Reverse Fly Single Arm (Cable)'] }
+      ]},
+      { label: 'Arme', items: [
+        { name: 'Triceps Rope Pushdown',
+          sets: '2 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Ellenbogen fixiert, Seil am Ende spreizen.',
+          alts: ['Triceps Extension (Cable)', 'Seated Dip Machine'] },
+        { name: 'Bicep Curl (Cable)',
+          sets: '2 Sätze', reps: '10–12', rest: '60 s',
+          tip: 'Bei Unterarm-Zug: Gewicht sofort reduzieren.',
+          alts: ['Single Arm Curl (Cable)', 'Hammer Curl (Dumbbell)'] }
+      ]}
+    ]
+  },
+
+  la: {
+    label: 'Lower A',
+    title: 'Posterior Chain',
+    focus: 'Trap Bar Deadlift als Hauptlift · Quad & Hamstring',
+    sections: [
+      { label: 'Hauptlift', items: [
+        { name: 'Deadlift (Trap Bar)', top: true,
+          sets: '1 Top + 2 Backoff', reps: '4–6 / 6–8', rest: '3–4 min / 2 min',
+          tip: 'Hüfte neutral, Brust raus. Kein Rundrücken. Backoff ≈ 87 % des Top-Gewichts.',
+          alts: ['Romanian Deadlift (Dumbbell)', 'Back Extension (Machine) schwer'] }
+      ]},
+      { label: 'Quad', items: [
+        { name: 'Bulgarian Split Squat',
+          sets: '3 Sätze', reps: '8–10', rest: '2 min',
+          tip: 'Knie der Standbein-Seite nicht nach innen kollabieren lassen.',
+          alts: ['Leg Press (Machine)', 'Zercher Squat'] },
+        { name: 'Leg Extension (Machine)',
+          sets: '3 Sätze', reps: '12–15', rest: '90 s',
+          tip: 'Höherer Wiederholungsbereich schont das Knie. Langsam exzentrisch.',
+          alts: ['Leg Press (Machine) hohe Fußposition', 'Leg Press einbeinig'] }
+      ]},
+      { label: 'Hamstring', items: [
+        { name: 'Lying Leg Curl (Machine)',
+          sets: '3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Hüfte bleibt auf der Bank. Volle Streckung unten, kein Schwung.',
+          alts: ['Seated Leg Curl (Machine)', 'Standing Leg Curl'] }
+      ]},
+      { label: 'Adduktoren', items: [
+        { name: 'Hip Adduction (Machine)',
+          sets: '2 Sätze', reps: '15–20', rest: '60 s',
+          tip: 'Kniestabilisierung. Kontrolliert und ohne Schwung.',
+          alts: ['Cable Hip Adduction'] }
+      ]},
+      { label: 'Core', items: [
+        { name: 'Cable Crunch',
+          sets: '3 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Bewegung aus dem Bauch, nicht den Hüften. Gewicht moderat halten.',
+          alts: ['Crunch (Machine)', 'Ab Wheel'] }
+      ]}
+    ]
+  },
+
+  ub: {
+    label: 'Upper B',
+    title: 'Rücken & Schulter',
+    focus: 'Pull Up als Hauptlift · Brust & Schulter ergänzend',
+    sections: [
+      { label: 'Hauptlift', items: [
+        { name: 'Pull Up (Weighted)', top: true,
+          sets: '1 Top + 2 Backoff', reps: '4–6 / 6–8', rest: '3 min / 2 min',
+          tip: 'Reentry: erst 3×5 ohne Gewicht bis RIR 2. Schulterbreiter Griff schont den Unterarm.',
+          alts: ['Lat Pulldown (Cable)', 'Lat Pulldown Close Grip', 'Iso-Lateral High Row'] }
+      ]},
+      { label: 'Brust', items: [
+        { name: 'Incline Bench (Barbell) — 30°',
+          sets: '3 Sätze', reps: '9–12', rest: '2 min',
+          tip: '30° maximiert Pec-Beteiligung, reduziert Schulter-Stress. Handgelenk neutral.',
+          alts: ['Incline Bench Press (Dumbbell)', 'Chest Press (Machine)'] },
+        { name: 'Pec Fly — Watson Multi Pec',
+          sets: '2 Sätze', reps: '12–15', rest: '90 s',
+          tip: 'Stretch in der Endposition aushalten. Langsam.',
+          alts: ['Cable Fly Crossovers', 'Low Cable Fly Crossovers'] }
+      ]},
+      { label: 'Rücken', items: [
+        { name: 'Lat Pulldown (Cable)',
+          sets: '3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Schulterblätter nach unten vor dem Beugen des Arms. Kein Schwingen.',
+          alts: ['Lat Pulldown Close Grip', 'Straight Arm Lat Pulldown', 'Iso-Lateral High Row'] }
+      ]},
+      { label: 'Schulter', items: [
+        { name: 'Overhead Press (Barbell)',
+          sets: '3 Sätze', reps: '8–10', rest: '2 min',
+          tip: 'Core angespannt. Stange über dem Kopf, nicht davor. Bei Unterarm-Beschwerden: Dumbbell.',
+          alts: ['Shoulder Press (Dumbbell)', 'Overhead Press (Smith Machine)', 'Arnold Press'] },
+        { name: 'Rear Delt Reverse Fly (Machine)',
+          sets: '3 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Schulterblätter am Ende kurz zusammenhalten.',
+          alts: ['Chest Supported Reverse Fly (Dumbbell)', 'Reverse Fly Single Arm (Cable)', 'Face Pull'] }
+      ]},
+      { label: 'Arme', items: [
+        { name: 'Triceps Extension (Cable)',
+          sets: '2 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Ellenbogen über dem Kopf für maximalen Stretch.',
+          alts: ['Single Arm Triceps Pushdown', 'Triceps Kickback (Cable)'] },
+        { name: 'Hammer Curl (Dumbbell)',
+          sets: '2 Sätze', reps: '10–12', rest: '60 s',
+          tip: 'Neutralgriff entlastet den Unterarm. Langsam exzentrisch.',
+          alts: ['Hammer Curl (Cable)', 'Single Arm Curl (Cable)'] }
+      ]}
+    ]
+  },
+
+  lb: {
+    label: 'Lower B',
+    title: 'Quad & Glute',
+    focus: 'Leg Press als Hauptlift · Hamstring & Core',
+    sections: [
+      { label: 'Hauptlift', items: [
+        { name: 'Leg Press (Machine)', top: true,
+          sets: '1 Top + 2 Backoff', reps: '6–8 / 10–12', rest: '3 min / 2 min',
+          tip: 'Füße schulterbreit, mittlere Höhe. Knie nicht über Zehen. Backoff ≈ 87 %.',
+          alts: ['Leg Press Horizontal (Machine)', 'Bulgarian Split Squat'] }
+      ]},
+      { label: 'Quad', items: [
+        { name: 'Bulgarian Split Squat',
+          sets: '3 Sätze', reps: '8–10', rest: '2 min',
+          tip: 'Heute leichter als Lower A — Leg Press war der Hauptlift.',
+          alts: ['Leg Press einbeinig', 'Zercher Squat'] },
+        { name: 'Leg Press — Variation',
+          sets: '2 Sätze', reps: '12–15', rest: '90 s',
+          tip: 'Hohe, enge Fußposition für mehr Glute-Beteiligung.',
+          alts: ['Leg Extension (Machine)'] }
+      ]},
+      { label: 'Hamstring', items: [
+        { name: 'Seated Leg Curl (Machine)',
+          sets: '3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Sitzend = längere Hamstring-Spannung als liegend. Voll strecken.',
+          alts: ['Lying Leg Curl (Machine)', 'Standing Leg Curl'] },
+        { name: 'Back Extension (Machine)',
+          sets: '3 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Ergänzt das Deadlift-Volumen aus Lower A.',
+          alts: ['Romanian Deadlift (leicht)'] }
+      ]},
+      { label: 'Abduktoren', items: [
+        { name: 'Hip Abduction (Machine)',
+          sets: '2 Sätze', reps: '15–20', rest: '60 s',
+          tip: 'Kniestabilisierung. Kontrolliert ohne Schwung.',
+          alts: ['Cable Hip Abduction'] }
+      ]},
+      { label: 'Core', items: [
+        { name: 'Hanging Leg Raise',
+          sets: '3 Sätze', reps: '10–15', rest: '60 s',
+          tip: 'Beine kontrolliert senken. Bei Unterarm-Ermüdung: Ab Wheel als Alternative.',
+          alts: ['Ab Wheel', 'Cable Crunch', 'Crunch (Machine)'] }
+      ]}
+    ]
+  },
+
+  uc: {
+    label: 'Upper C',
+    title: 'Schulter & Arme',
+    focus: 'Optionale 5. Einheit · Volumen & Isolation',
+    sections: [
+      { label: 'Brust', items: [
+        { name: 'Decline Bench (Dumbbell)',
+          sets: '3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Untere Brust. Ergänzt Incline aus Upper B. Handgelenk neutral.',
+          alts: ['Cable Fly Crossovers', 'Low Cable Fly Crossovers'] },
+        { name: 'Pec Deck / Butterfly',
+          sets: '3 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Pump-Finisher. Konstante Spannung wichtiger als Gewicht.',
+          alts: ['Pec Fly (Watson Multi Pec)', 'Cable Fly Crossovers'] }
+      ]},
+      { label: 'Rücken', items: [
+        { name: 'Iso-Lateral High Row (Machine)',
+          sets: '3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Unilateral wenn möglich für Symmetrie-Check.',
+          alts: ['Iso-Lateral Row (Machine)', 'Seated Cable Row Bar Wide Grip'] }
+      ]},
+      { label: 'Schulter', items: [
+        { name: 'Arnold Press (Dumbbell)',
+          sets: '3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Volle Rotation nutzen. Nicht zu schwer — Schulter vorermüdet.',
+          alts: ['Seated Shoulder Press (Machine)', 'Shoulder Press (Dumbbell)'] },
+        { name: 'Lateral Raise (Machine)',
+          sets: '3 Sätze', reps: '15–20', rest: '60 s',
+          tip: 'Konstante Spannung durch Maschine. Kein Schwung.',
+          alts: ['Lateral Raise (Cable)', 'Single Arm Lateral Raise (Cable)'] }
+      ]},
+      { label: 'Arme', items: [
+        { name: 'Single Arm Triceps Pushdown',
+          sets: '3 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Schwächere Seite zuerst für Symmetrie.',
+          alts: ['Triceps Rope Pushdown', 'Triceps Kickback (Cable)'] },
+        { name: 'Hammer Curl (Dumbbell)',
+          sets: '3 Sätze', reps: '10–12', rest: '60 s',
+          tip: 'Neutralgriff. Langsam exzentrisch.',
+          alts: ['Hammer Curl (Cable)', 'Bicep Curl (Cable)'] }
+      ]},
+      { label: 'Core', items: [
+        { name: 'Cable Crunch / Ab Wheel',
+          sets: '3 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Ab Wheel nur bei frischem Rumpf. Sonst Cable Crunch.',
+          alts: ['Hanging Leg Raise', 'Cable Core Palloff Press'] }
+      ]}
+    ]
+  }
+};
+
+let openCards = new Set();
+
+function select(key) {
+  openCards.clear();
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.key === key);
+  });
+  render(key);
+}
+
+function render(key) {
+  const s = data[key];
+  const el = document.getElementById('content');
+
+  let i = 0;
+  let html = `
+    <div class="session-header">
+      <div class="session-label">${s.label}</div>
+      <div class="session-title">${s.title}</div>
+      <div class="session-focus">${s.focus}</div>
+    </div>
+    <div class="rir-bar">
+      <div class="rir-item">
+        <div class="rir-key">Top-Set</div>
+        <div class="rir-val">RIR 1</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="rir-item">
+        <div class="rir-key">Backoff</div>
+        <div class="rir-val">RIR 2–3</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="rir-item">
+        <div class="rir-key">Isolation</div>
+        <div class="rir-val">RIR 2</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="rir-item">
+        <div class="rir-key">Schmerz</div>
+        <div class="rir-val">−20 % / Alt</div>
+      </div>
+    </div>
+  `;
+
+  s.sections.forEach(sec => {
+    html += `<div class="section-label">${sec.label}</div>`;
+    sec.items.forEach(ex => {
+      const id = `e${i}`;
+      const delay = (i * 0.04).toFixed(2);
+      html += `
+        <div class="ex-card ${ex.top ? 'is-top' : ''}" id="card-${id}" style="animation-delay:${delay}s">
+          <div class="ex-row" onclick="toggle('${id}')">
+            <div class="ex-index">${i + 1}</div>
+            <div class="ex-body">
+              <div class="ex-name">${ex.name}</div>
+              <div class="ex-stats">
+                <div class="stat">
+                  <div class="stat-key">Sätze</div>
+                  <div class="stat-val">${ex.sets}</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                  <div class="stat-key">Wdh</div>
+                  <div class="stat-val">${ex.reps}</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                  <div class="stat-key">Pause</div>
+                  <div class="stat-val">${ex.rest}</div>
+                </div>
+              </div>
+            </div>
+            <div class="ex-arrow" id="arr-${id}">▾</div>
+          </div>
+          <div class="ex-drawer" id="drawer-${id}">
+            <div class="drawer-inner">
+              <div class="tip-text">${ex.tip}</div>
+              <div class="alts-label">Alternativen</div>
+              <div class="alts-list">
+                ${ex.alts.map(a => `<div class="alt-item"><div class="alt-dot"></div>${a}</div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      i++;
+    });
+  });
+
+  el.innerHTML = html;
+}
+
+function toggle(id) {
+  const drawer = document.getElementById('drawer-' + id);
+  const arr = document.getElementById('arr-' + id);
+  const isOpen = openCards.has(id);
+  if (isOpen) {
+    drawer.classList.remove('open');
+    arr.classList.remove('open');
+    openCards.delete(id);
+  } else {
+    drawer.classList.add('open');
+    arr.classList.add('open');
+    openCards.add(id);
+  }
+}
+</script>
+</body>
+</html>

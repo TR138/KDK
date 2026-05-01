@@ -394,6 +394,131 @@
 
   .ex-card.done .check-icon { display: block; }
 
+  /* Backoff Calculator */
+  .calc-section {
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+
+  .calc-label {
+    font-size: 0.55rem;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 16px;
+  }
+
+  .calc-card {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+
+  .calc-input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .calc-input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .calc-input-label {
+    font-size: 0.52rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .calc-input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 300;
+    padding: 10px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  .calc-input::-webkit-outer-spin-button,
+  .calc-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .calc-input:focus { border-color: rgba(212,175,55,0.4); }
+
+  .calc-unit {
+    font-size: 0.7rem;
+    font-weight: 300;
+    color: var(--dim);
+    padding-top: 20px;
+    flex-shrink: 0;
+  }
+
+  .calc-results {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .calc-result {
+    background: var(--card);
+    border-radius: 6px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+
+  .calc-result-pct {
+    font-size: 0.52rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 5px;
+  }
+
+  .calc-result-val {
+    font-size: 1.1rem;
+    font-weight: 200;
+    color: var(--beige);
+    letter-spacing: 0.02em;
+  }
+
+  .calc-result-val span {
+    font-size: 0.65rem;
+    color: var(--dim);
+    font-weight: 300;
+  }
+
+  .calc-result.primary {
+    background: rgba(212,175,55,0.08);
+    border: 1px solid rgba(212,175,55,0.2);
+  }
+
+  .calc-result.primary .calc-result-val { color: var(--gold); }
+  .calc-result.primary .calc-result-pct { color: var(--gold); opacity: 0.6; }
+
+  .calc-note {
+    font-size: 0.62rem;
+    font-weight: 300;
+    color: var(--dim);
+    text-align: center;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+
   /* Animations */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(8px); }
@@ -796,7 +921,60 @@ function render(key) {
     });
   });
 
-  el.innerHTML = html;
+  el.innerHTML = html + `
+    <div class="calc-section">
+      <div class="calc-label">Backoff Rechner</div>
+      <div class="calc-card">
+        <div class="calc-input-row">
+          <div class="calc-input-group">
+            <div class="calc-input-label">Top-Set Gewicht</div>
+            <input class="calc-input" type="number" id="calc-weight" placeholder="z.B. 65" inputmode="decimal" oninput="calcBackoff()">
+          </div>
+          <div class="calc-unit">kg</div>
+          <div class="calc-input-group">
+            <div class="calc-input-label">Schrittgröße</div>
+            <input class="calc-input" type="number" id="calc-step" placeholder="2.5" inputmode="decimal" value="2.5" oninput="calcBackoff()">
+          </div>
+          <div class="calc-unit">kg</div>
+        </div>
+        <div class="calc-results">
+          <div class="calc-result">
+            <div class="calc-result-pct">80 %</div>
+            <div class="calc-result-val" id="res-80">— <span>kg</span></div>
+          </div>
+          <div class="calc-result primary">
+            <div class="calc-result-pct">87 %</div>
+            <div class="calc-result-val" id="res-87">— <span>kg</span></div>
+          </div>
+          <div class="calc-result">
+            <div class="calc-result-pct">90 %</div>
+            <div class="calc-result-val" id="res-90">— <span>kg</span></div>
+          </div>
+        </div>
+        <div class="calc-note">87 % = Standard Backoff · gerundet auf Schrittgröße</div>
+      </div>
+    </div>
+  `;
+}
+
+function calcBackoff() {
+  const w = parseFloat(document.getElementById('calc-weight').value);
+  const step = parseFloat(document.getElementById('calc-step').value) || 2.5;
+
+  const round = (val, s) => Math.round(val / s) * s;
+
+  const pcts = { 80: 'res-80', 87: 'res-87', 90: 'res-90' };
+
+  Object.entries(pcts).forEach(([pct, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!w || isNaN(w)) {
+      el.innerHTML = `— <span>kg</span>`;
+    } else {
+      const val = round(w * (pct / 100), step);
+      el.innerHTML = `${val} <span>kg</span>`;
+    }
+  });
 }
 
 function toggle(id) {

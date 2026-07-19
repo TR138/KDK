@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:            #F8F9FB;
+    --card:          #FFFFFF;
+    --card-tint:     rgba(255,90,31,0.045);
+    --navy:          #1F2937;
+    --navy-soft:     #4B5563;
+    --muted:         #9CA3AF;
+    --border:        #E7E9EE;
+
+    --accent:        #FF5A1F;
+    --accent-wash:   rgba(255,90,31,0.10);
+    --accent-wash-2: rgba(255,90,31,0.16);
+
+    --success:       #22C55E;
+    --success-wash:  rgba(34,197,94,0.12);
+
+    --warning:       #F59E0B;
+    --warning-wash:  rgba(245,158,11,0.13);
+
+    --error:         #EF4444;
+
+    --shadow-sm: 0 1px 2px rgba(17,24,39,0.04), 0 1px 1px rgba(17,24,39,0.03);
+    --shadow-md: 0 2px 6px rgba(17,24,39,0.05), 0 8px 20px rgba(17,24,39,0.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--navy);
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    padding-bottom: 60px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono { font-family: 'JetBrains Mono', 'SFMono-Regular', monospace; font-variant-numeric: tabular-nums; }
+
+  /* ── Header ── */
+  .header {
+    padding: 44px 20px 20px;
+    position: sticky;
+    top: 0;
+    background: linear-gradient(180deg, var(--bg) 78%, rgba(248,249,251,0) 100%);
+    z-index: 100;
+  }
+
+  .wordmark {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 20px;
+  }
+
+  .wordmark span {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Session selector — segmented control */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: #EEF0F4;
+    padding: 4px;
+    border-radius: 14px;
+  }
+
+  .tab {
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--navy-soft);
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 4px;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+    text-align: center;
+  }
+
+  .tab.active {
+    color: var(--navy);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ── Content ── */
+  .content {
+    padding: 8px 20px 0;
+  }
+
+  /* Session header */
+  .session-header {
+    padding: 20px 4px 22px;
+    opacity: 0;
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  .session-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .session-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--navy);
+    margin-bottom: 5px;
+  }
+
+  .session-focus {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--navy-soft);
+    letter-spacing: 0.01em;
+    line-height: 1.45;
+  }
+
+  /* RIR note */
+  .rir-bar {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0;
+    animation: fadeUp 0.4s 0.08s ease forwards;
+  }
+
+  .rir-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .rir-key {
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .rir-val {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  .rir-item.warn .rir-val { color: var(--warning); }
+  .rir-item.warn .rir-key { color: var(--warning); opacity: 0.85; }
+
+  /* Section */
+  .section-label {
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 4px;
+    margin: 22px 0 10px;
+  }
+
+  /* Exercise card */
+  .ex-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    opacity: 0;
+    animation: fadeUp 0.35s ease forwards;
+    transition: box-shadow 0.2s;
+  }
+
+  .ex-card.is-top {
+    background: linear-gradient(var(--card-tint), var(--card-tint)), var(--card);
+    border-color: rgba(255,90,31,0.22);
+    border-left: 3px solid var(--accent);
+    box-shadow: var(--shadow-md);
+  }
+
+  .ex-card:active { box-shadow: var(--shadow-sm); }
+
+  .top-tag {
+    display: inline-block;
+    font-size: 0.52rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-wash);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+
+  .warn-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--warning);
+    background: var(--warning-wash);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+  }
+
+  .ex-row {
+    display: flex;
+    align-items: center;
+    padding: 16px 18px;
+    cursor: pointer;
+    gap: 14px;
+    user-select: none;
+  }
+
+  .ex-body { flex: 1; min-width: 0; }
+
+  .ex-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .is-top .ex-name { color: var(--navy); }
+
+  .ex-stats {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-key {
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .stat-val {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--navy-soft);
+    white-space: nowrap;
+  }
+
+  .is-top .stat-val { color: var(--navy); }
+
+  .stat-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .ex-arrow {
+    color: var(--muted);
+    font-size: 0.6rem;
+    flex-shrink: 0;
+    transition: transform 0.25s ease, color 0.2s;
+  }
+
+  .ex-arrow.open {
+    transform: rotate(180deg);
+    color: var(--accent);
+  }
+
+  /* Drawer */
+  .ex-drawer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .ex-drawer.open { max-height: 340px; }
+
+  .drawer-inner {
+    padding: 0 18px 18px 18px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    margin: 0 18px;
+  }
+
+  .tip-text {
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--navy-soft);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .alts-label {
+    font-size: 0.52rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .alts-list { display: flex; flex-direction: column; gap: 7px; }
+
+  .alt-item {
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--navy-soft);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .alt-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+
+  /* Empty state */
+  .empty {
+    padding: 80px 28px;
+    text-align: center;
+  }
+
+  .empty-line {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--navy-soft);
+    margin-bottom: 10px;
+  }
+
+  .empty-sub {
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  .alt-session {
+    font-size: 0.62rem;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* Done state */
+  .ex-card.done {
+    opacity: 0.55;
+  }
+
+  .ex-card.done .ex-name {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  .ex-card.done.is-top {
+    box-shadow: var(--shadow-sm);
+    background: var(--card);
+    border-left-color: var(--border);
+  }
+
+  .check-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    padding: 0;
+  }
+
+  .check-btn:active { transform: scale(0.9); }
+
+  .ex-card.done .check-btn {
+    background: var(--success);
+    border-color: var(--success);
+  }
+
+  .check-icon {
+    display: none;
+    width: 11px;
+    height: 11px;
+  }
+
+  .ex-card.done .check-icon { display: block; }
+
+  /* Backoff Calculator */
+  .calc-section {
+    margin-top: 36px;
+    padding-top: 26px;
+    border-top: 1px solid var(--border);
+  }
+
+  .calc-label {
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .calc-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .calc-input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .calc-input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .calc-input-label {
+    font-size: 0.52rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .calc-input {
+    background: #F3F4F6;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--navy);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  .calc-input::-webkit-outer-spin-button,
+  .calc-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .calc-input:focus { border-color: var(--accent); background: var(--card); }
+
+  .calc-unit {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted);
+    padding-top: 20px;
+    flex-shrink: 0;
+  }
+
+  .calc-results {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .calc-result {
+    background: #F8F9FB;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+
+  .calc-result-pct {
+    font-size: 0.52rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+
+  .calc-result-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--navy-soft);
+    letter-spacing: 0;
+  }
+
+  .calc-result-val span {
+    font-size: 0.62rem;
+    color: var(--muted);
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .calc-result.primary {
+    background: var(--accent-wash);
+    border: 1px solid var(--accent-wash-2);
+  }
+
+  .calc-result.primary .calc-result-val { color: var(--accent); }
+  .calc-result.primary .calc-result-pct { color: var(--accent); opacity: 0.8; }
+
+  .calc-note {
+    font-size: 0.64rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ex-card, .session-header, .rir-bar { animation: none !important; opacity: 1 !important; }
+    .ex-drawer, .ex-arrow, .tab { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="wordmark">Training <span>/</span> Session Guide</div>
+  <div class="tabs">
+    <button class="tab" data-key="ua" onclick="select('ua')">Upper A</button>
+    <button class="tab" data-key="l" onclick="select('l')">Lower</button>
+    <button class="tab" data-key="ub" onclick="select('ub')">Upper B</button>
+  </div>
+</div>
+
+<div class="content" id="content">
+  <div class="empty">
+    <div class="empty-line">Einheit wählen</div>
+    <div class="empty-sub">↑ Session auswählen</div>
+  </div>
+</div>
+
+<script>
+const data = {
+  ua: {
+    label: 'Upper A',
+    title: 'Brust & Rücken',
+    focus: 'Chest Press als Hauptlift · Rücken als Antagonist',
+    sections: [
+      { label: 'Hauptlift', items: [
+        { name: 'Chest Press (Machine)', top: true,
+          sets: '1 Top + 2 Backoff', reps: '4–6 / 8–10', rest: '3 min / 2 min',
+          tip: 'Handgelenk neutral. Backoff ≈ 87 % des Top-Gewichts. Bei Schmerz sofort reduzieren.',
+          alts: ['Bankdrücken (Langhantel, flach)', 'Incline Bench Press (Barbell)', 'Incline Bench Press (Dumbbell)'] }
+      ]},
+      { label: 'Brust', items: [
+        { name: 'Brust Iso [Watson/Butterfly]',
+          sets: '3 Sätze', reps: '10–15', rest: '90 s',
+          tip: 'Maximaler Stretch in der Endposition. Exzentrisch kontrolliert senken.',
+          alts: ['Cable Fly Crossovers', 'Pec Deck / Butterfly'] }
+      ]},
+      { label: 'Rücken', items: [
+        { name: 'Seal Row (Flachbank)',
+          sets: '3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Brust fest auf der Bank, kein Schwung möglich. Trifft oberen Rücken/Rear Delt stärker, Lat weniger als Seated Row.',
+          alts: ['Seated Cable Row (V-Grip)', 'T-Bar Row', 'Bent Over Row (Dumbbell)'] }
+      ]},
+      { label: 'Schulter', items: [
+        { name: 'Lateral Raise (Machine)',
+          sets: '3 Sätze', reps: '15–20', rest: '60 s',
+          tip: 'Konstante Spannung durch Maschine. Bewegung aus der Schulter, nicht dem Handgelenk.',
+          alts: ['Lateral Raise (Cable)', 'Single Arm Lateral Raise (Cable)'] },
+        { name: 'Face Pull',
+          sets: '2 Sätze', reps: '15–20', rest: '60 s',
+          tip: 'Seil zu den Ohren. Ellenbogen hoch halten. Schultergesundheit.',
+          alts: ['Rear Delt Reverse Fly (Machine)', 'Reverse Fly Single Arm (Cable)'] }
+      ]},
+      { label: 'Arme', items: [
+        { name: 'Triceps Rope Pushdown',
+          sets: '2 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Ellenbogen fixiert, Seil am Ende spreizen.',
+          alts: ['Triceps Extension (Cable)', 'Seated Dip Machine'] },
+        { name: 'Bicep Curl (Cable)',
+          sets: '2 Sätze', reps: '10–12', rest: '60 s',
+          tip: 'Bei Unterarm-Zug: Gewicht sofort reduzieren.',
+          alts: ['Single Arm Curl (Cable)', 'Hammer Curl (Dumbbell)'] }
+      ]}
+    ]
+  },
+
+  l: {
+    label: 'Lower',
+    title: 'Posterior Chain & Quad',
+    focus: 'Trap Bar Deadlift als Hauptlift · fusioniert aus Lower A/B · Rennrad deckt Quad-Ausdauer ab',
+    sections: [
+      { label: 'Hauptlift', items: [
+        { name: 'Deadlift (Trap Bar)', top: true, warn: 'Hohe CNS-Last',
+          sets: '1 Top + 1–2 Backoff', reps: '4–6 / 6–8', rest: '3–4 min / 2 min',
+          tip: 'RPE-Deckel bei 8 statt 9 — sonst fehlt die Kapazität für den Rest der Einheit. Hüfte neutral, Brust raus, kein Rundrücken.',
+          alts: ['Romanian Deadlift (Dumbbell)', 'Leg Press (Machine) schwer'] }
+      ]},
+      { label: 'Quad', items: [
+        { name: 'Leg Press (Machine)',
+          sets: '2–3 Sätze', reps: '8–12', rest: '2 min',
+          tip: 'Ersetzt Bulgarian Split Squat als zweite Übung — schont das Nervensystem nach dem Deadlift.',
+          alts: ['Bulgarian Split Squat', 'Leg Extension (Machine)'] }
+      ]},
+      { label: 'Hamstring', items: [
+        { name: 'Seated Leg Curl (Machine)',
+          sets: '2–3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Kein Lying Leg Curl im Studio verfügbar — Single Leg Cable Curl als Alternative.',
+          alts: ['Single Leg Cable Leg Curl', 'Lying Leg Curl (Machine)'] }
+      ]},
+      { label: 'Hüfte', items: [
+        { name: 'Hip Adduction / Abduction (Machine)',
+          sets: '2 Sätze', reps: '15–20', rest: '60 s',
+          tip: 'Wöchentlich abwechseln. Kniestabilisierung — wichtig für Kniegesundheit beim Radfahren.',
+          alts: ['Cable Hip Adduction', 'Cable Hip Abduction'] }
+      ]},
+      { label: 'Core', items: [
+        { name: 'Cable Crunch',
+          sets: '2 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'In die Pausen des Deadlifts einschieben — spart Zeit in der 70-Min-Einheit.',
+          alts: ['Hanging Leg Raise', 'Ab Wheel'] }
+      ]}
+    ]
+  },
+
+  ub: {
+    label: 'Upper B',
+    title: 'Rücken & Schulter',
+    focus: 'Pull Up als Hauptlift · OHP gestrichen (Volumen nicht machbar)',
+    sections: [
+      { label: 'Hauptlift', items: [
+        { name: 'Pull Up (Weighted)', top: true,
+          sets: '1 Top + 2 Backoff', reps: '4–6 / 6–8', rest: '3 min / 2 min',
+          tip: 'Reentry: erst 3×5 ohne Gewicht bis RIR 2. Schulterbreiter Griff schont den Unterarm.',
+          alts: ['Straight Arm Lat Pulldown', 'Lat Pulldown (Cable)', 'Iso-Lateral High Row'] }
+      ]},
+      { label: 'Brust', items: [
+        { name: 'Incline Bench (Barbell) — 30°',
+          sets: '3 Sätze', reps: '9–12', rest: '2 min',
+          tip: '30° maximiert Pec-Beteiligung, reduziert Schulter-Stress. Handgelenk neutral.',
+          alts: ['Incline Bench Press (Dumbbell)', 'Chest Press (Machine)'] },
+        { name: 'Brust Iso [Cross Body, Watson]',
+          sets: '2 Sätze', reps: '12–15', rest: '90 s',
+          tip: 'Stretch in der Endposition aushalten. Langsam. Wechselt sich mit Cross-Body Front Raise ab.',
+          alts: ['Cross-Body Front Raise (Cable)', 'Pec Deck / Butterfly', 'Cable Fly Crossovers'] }
+      ]},
+      { label: 'Rücken', items: [
+        { name: 'Straight Arm Lat Pulldown',
+          sets: '3 Sätze', reps: '10–12', rest: '90 s',
+          tip: 'Weniger redundant zu Pull Up als der normale Lat Pulldown — Streckung statt Ellenbogenbeugung als Hauptreiz.',
+          alts: ['Lat Pulldown (Cable)', 'Lat Pulldown Close Grip'] }
+      ]},
+      { label: 'Schulter', items: [
+        { name: 'Rear Delt Reverse Fly (Machine)',
+          sets: '3 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Schulterblätter am Ende kurz zusammenhalten. Wechselt sich mit Archer Pull oder Single Arm Cable Rear Fly ab.',
+          alts: ['Archer Pull (Cable)', 'Reverse Fly Single Arm (Cable)', 'Face Pull'] }
+      ]},
+      { label: 'Arme', items: [
+        { name: 'Triceps Extension (Cable)',
+          sets: '2 Sätze', reps: '12–15', rest: '60 s',
+          tip: 'Ellenbogen über dem Kopf für maximalen Stretch.',
+          alts: ['Single Arm Triceps Pushdown', 'Triceps Kickback (Cable)'] },
+        { name: 'Hammer Curl (Dumbbell)',
+          sets: '2 Sätze', reps: '10–12', rest: '60 s',
+          tip: 'Neutralgriff entlastet den Unterarm. Langsam exzentrisch.',
+          alts: ['Hammer Curl (Cable)', 'Single Arm Curl (Cable)'] }
+      ]}
+    ]
+  }
+};
+
+// Build a lookup: exercise name → which sessions contain it
+function buildExerciseIndex() {
+  const index = {}; // name → Set of session keys
+  Object.entries(data).forEach(([key, session]) => {
+    session.sections.forEach(sec => {
+      sec.items.forEach(ex => {
+        const n = ex.name.toLowerCase();
+        if (!index[n]) index[n] = new Set();
+        index[n].add(key);
+      });
+    });
+  });
+  return index;
+}
+
+const exIndex = buildExerciseIndex();
+
+const sessionShortName = { ua: 'Upper A', l: 'Lower', ub: 'Upper B' };
+
+function altLabel(altName, currentSessionKey) {
+  const n = altName.toLowerCase();
+  // Try exact match first, then partial
+  let found = null;
+  Object.keys(exIndex).forEach(k => {
+    if (k === n || n.startsWith(k) || k.startsWith(n.split(' —')[0].toLowerCase())) {
+      const sessions = exIndex[k];
+      sessions.forEach(s => {
+        if (s !== currentSessionKey) found = s;
+      });
+    }
+  });
+  // Also check if any plan exercise name is contained in the alt name
+  if (!found) {
+    Object.keys(exIndex).forEach(k => {
+      if (n.includes(k.split(' (')[0].toLowerCase()) || k.includes(n.split(' (')[0].toLowerCase())) {
+        exIndex[k].forEach(s => {
+          if (s !== currentSessionKey) found = s;
+        });
+      }
+    });
+  }
+  return found ? ` <span class="alt-session">(${sessionShortName[found]})</span>` : '';
+}
+
+let openCards = new Set();
+let doneCards = new Set();
+
+function select(key) {
+  openCards.clear();
+  doneCards.clear();
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.key === key);
+  });
+  render(key);
+}
+
+function render(key) {
+  const s = data[key];
+  const el = document.getElementById('content');
+
+  let i = 0;
+  let html = `
+    <div class="session-header">
+      <div class="session-label">${s.label}</div>
+      <div class="session-title">${s.title}</div>
+      <div class="session-focus">${s.focus}</div>
+    </div>
+    <div class="rir-bar">
+      <div class="rir-item">
+        <div class="rir-key">Top-Set</div>
+        <div class="rir-val mono">RIR 1</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="rir-item">
+        <div class="rir-key">Backoff</div>
+        <div class="rir-val mono">RIR 2–3</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="rir-item">
+        <div class="rir-key">Isolation</div>
+        <div class="rir-val mono">RIR 2</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="rir-item warn">
+        <div class="rir-key">Schmerz</div>
+        <div class="rir-val mono">−20 % / Alt</div>
+      </div>
+    </div>
+  `;
+
+  s.sections.forEach(sec => {
+    html += `<div class="section-label">${sec.label}</div>`;
+    sec.items.forEach(ex => {
+      const id = `e${i}`;
+      const delay = (i * 0.04).toFixed(2);
+      html += `
+        <div class="ex-card ${ex.top ? 'is-top' : ''}" id="card-${id}" style="animation-delay:${delay}s">
+          <div class="ex-row" onclick="toggle('${id}')">
+            <button class="check-btn" onclick="event.stopPropagation(); checkDone('${id}')">
+              <svg class="check-icon" viewBox="0 0 10 10" fill="none">
+                <polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="ex-body">
+              ${ex.top ? `<div class="top-tag">Hauptlift</div>` : ''}
+              <div class="ex-name">${ex.name}</div>
+              <div class="ex-stats">
+                <div class="stat">
+                  <div class="stat-key">Sätze</div>
+                  <div class="stat-val mono">${ex.sets}</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                  <div class="stat-key">Wdh</div>
+                  <div class="stat-val mono">${ex.reps}</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                  <div class="stat-key">Pause</div>
+                  <div class="stat-val mono">${ex.rest}</div>
+                </div>
+              </div>
+            </div>
+            <div class="ex-arrow" id="arr-${id}">▾</div>
+          </div>
+          <div class="ex-drawer" id="drawer-${id}">
+            <div class="drawer-inner">
+              <div class="tip-text">${ex.tip}</div>
+              ${ex.warn ? `<div class="warn-tag">⚠ ${ex.warn}</div>` : ''}
+              <div class="alts-label" style="margin-top:${ex.warn ? '14px' : '0'}">Alternativen</div>
+              <div class="alts-list">
+                ${ex.alts.map(a => `<div class="alt-item"><div class="alt-dot"></div>${a}${altLabel(a, key)}</div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      i++;
+    });
+  });
+
+  el.innerHTML = html + `
+    <div class="calc-section">
+      <div class="calc-label">Backoff Rechner</div>
+      <div class="calc-card">
+        <div class="calc-input-row">
+          <div class="calc-input-group">
+            <div class="calc-input-label">Top-Set Gewicht</div>
+            <input class="calc-input" type="number" id="calc-weight" placeholder="z.B. 65" inputmode="decimal" oninput="calcBackoff()">
+          </div>
+          <div class="calc-unit">kg</div>
+          <div class="calc-input-group">
+            <div class="calc-input-label">Schrittgröße</div>
+            <input class="calc-input" type="number" id="calc-step" placeholder="2.5" inputmode="decimal" value="2.5" oninput="calcBackoff()">
+          </div>
+          <div class="calc-unit">kg</div>
+        </div>
+        <div class="calc-results">
+          <div class="calc-result">
+            <div class="calc-result-pct">80 %</div>
+            <div class="calc-result-val" id="res-80">— <span>kg</span></div>
+          </div>
+          <div class="calc-result primary">
+            <div class="calc-result-pct">87 %</div>
+            <div class="calc-result-val" id="res-87">— <span>kg</span></div>
+          </div>
+          <div class="calc-result">
+            <div class="calc-result-pct">90 %</div>
+            <div class="calc-result-val" id="res-90">— <span>kg</span></div>
+          </div>
+        </div>
+        <div class="calc-note">87 % = Standard Backoff · gerundet auf Schrittgröße</div>
+      </div>
+    </div>
+  `;
+}
+
+function calcBackoff() {
+  const w = parseFloat(document.getElementById('calc-weight').value);
+  const step = parseFloat(document.getElementById('calc-step').value) || 2.5;
+
+  const round = (val, s) => Math.round(val / s) * s;
+
+  const pcts = { 80: 'res-80', 87: 'res-87', 90: 'res-90' };
+
+  Object.entries(pcts).forEach(([pct, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!w || isNaN(w)) {
+      el.innerHTML = `— <span>kg</span>`;
+    } else {
+      const val = round(w * (pct / 100), step);
+      el.innerHTML = `${val} <span>kg</span>`;
+    }
+  });
+}
+
+function toggle(id) {
+  const drawer = document.getElementById('drawer-' + id);
+  const arr = document.getElementById('arr-' + id);
+  const isOpen = openCards.has(id);
+  if (isOpen) {
+    drawer.classList.remove('open');
+    arr.classList.remove('open');
+    openCards.delete(id);
+  } else {
+    drawer.classList.add('open');
+    arr.classList.add('open');
+    openCards.add(id);
+  }
+}
+
+function checkDone(id) {
+  const card = document.getElementById('card-' + id);
+  const isDone = doneCards.has(id);
+  if (isDone) {
+    card.classList.remove('done');
+    doneCards.delete(id);
+  } else {
+    card.classList.add('done');
+    doneCards.add(id);
+    // close drawer if open
+    const drawer = document.getElementById('drawer-' + id);
+    const arr = document.getElementById('arr-' + id);
+    drawer.classList.remove('open');
+    arr.classList.remove('open');
+    openCards.delete(id);
+  }
+}
+</script>
+</body>
+</html>
